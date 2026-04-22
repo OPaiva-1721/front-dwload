@@ -1,0 +1,69 @@
+.cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+.crosshair {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(167, 139, 250, 0.85);
+  border-radius: 2px;
+}
+
+.crosshair::before {
+  width: 1px;
+  height: 14px;
+}
+
+.crosshair::after {
+  width: 14px;
+  height: 1px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  box-shadow: 0 0 8px var(--accent-teal);
+  position: relative;
+  z-index: 1;
+}
+
+.aura {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  animation: auraPulse 2s ease-in-out infinite;
+}
+
+@keyframes auraPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.08;
+  }
+}
