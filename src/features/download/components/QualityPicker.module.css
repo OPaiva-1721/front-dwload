@@ -1,0 +1,28 @@
+.row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(100, 80, 200, 0.25);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.pill:hover {
+  color: var(--text-muted);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.pill.active {
+  background: rgba(45, 212, 191, 0.12);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}

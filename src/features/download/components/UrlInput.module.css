@@ -1,0 +1,79 @@
+.wrap {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.platformIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-teal);
+  width: 20px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.platformIcon.visible {
+  opacity: 1;
+}
+
+.input {
+  width: 100%;
+  background: rgba(8, 6, 20, 0.7);
+  border: 1px solid rgba(100, 80, 200, 0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, padding-left 0.2s, color 0.2s;
+}
+
+.input.hasIcon {
+  padding-left: 42px;
+}
+
+.input::placeholder {
+  color: var(--text-dim);
+}
+
+.input:focus {
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.08);
+  color: var(--text-primary);
+}
+
+/* Scan line: thin horizontal shimmer that sweeps the input */
+.wrap::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 9px;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(167, 139, 250, 0.04) 50%,
+    transparent 60%
+  );
+  pointer-events: none;
+  animation: scanLine 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.wrap:focus-within::after {
+  opacity: 1;
+}
+
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
