@@ -1,0 +1,29 @@
+:root {
+  /* Backgrounds */
+  --bg: #050508;
+  --card-bg: rgba(18, 14, 38, 0.85);
+  --card-border: rgba(120, 90, 220, 0.25);
+
+  /* Accent colors */
+  --accent-purple: #a78bfa;
+  --accent-teal: #2dd4bf;
+  --accent-blue: #818cf8;
+
+  /* Button states */
+  --btn-active-bg: #3b2f7a;
+  --btn-active-border: #7c5cdb;
+
+  /* Launch button gradient */
+  --launch-from: #7c3aed;
+  --launch-to: #a78bfa;
+
+  /* Text */
+  --text-primary: #f1f0ff;
+  --text-muted: #8b8aaa;
+  --text-dim: #4a4870;
+
+  /* Fonts */
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
