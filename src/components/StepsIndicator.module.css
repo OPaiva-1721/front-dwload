@@ -1,0 +1,84 @@
+.root {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.stepCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.circle.pending {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(120, 90, 220, 0.2);
+  color: var(--text-dim);
+}
+
+.circle.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border: 1.5px solid var(--accent-blue);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(129, 140, 248, 0.55);
+}
+
+.circle.done {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+  border: 1.5px solid var(--accent-teal);
+  color: #fff;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  transition: color 0.3s;
+}
+
+.label.pending {
+  color: var(--text-dim);
+}
+
+.label.active {
+  color: var(--accent-blue);
+}
+
+.label.done {
+  color: var(--accent-teal);
+}
+
+.connector {
+  flex: 1;
+  height: 1px;
+  background: rgba(120, 90, 220, 0.15);
+  transition: background 0.4s;
+  margin-bottom: 22px;
+}
+
+.connectorDone {
+  background: linear-gradient(to right, var(--accent-teal), var(--accent-blue));
+}

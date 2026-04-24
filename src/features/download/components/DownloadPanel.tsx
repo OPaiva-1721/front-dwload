@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDownloadStore } from '../store'
 import { IdleView } from './IdleView'
+import { DownloadingView } from './DownloadingView'
+import type { Step } from '@/components/StepsIndicator'
 import styles from './DownloadPanel.module.css'
+
+type JobState = 'idle' | 'downloading' | 'done'
+
+const DEBUG_STEPS: Step[] = ['resolving', 'fetching', 'transcoding', 'packaging']
 
 export function DownloadPanel() {
   const [glitch, setGlitch] = useState(false)
   const glitchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [jobState, setJobState] = useState<JobState>('idle')
+  const [debugStepIndex, setDebugStepIndex] = useState(0)
   const { url, format, quality } = useDownloadStore()
 
   // Periodic glitch animation on the title
@@ -29,6 +37,24 @@ export function DownloadPanel() {
 
   function handleLaunch() {
     console.log('[DownloadPanel] launch', { url, format, quality })
+    setJobState('downloading')
+    setDebugStepIndex(0)
+  }
+
+  function handleDebugNextStep() {
+    if (jobState === 'idle') {
+      setJobState('downloading')
+      setDebugStepIndex(0)
+    } else if (jobState === 'downloading') {
+      if (debugStepIndex < DEBUG_STEPS.length - 1) {
+        setDebugStepIndex((i) => i + 1)
+      } else {
+        setJobState('done')
+      }
+    } else {
+      setJobState('idle')
+      setDebugStepIndex(0)
+    }
   }
 
   return (
@@ -53,9 +79,38 @@ export function DownloadPanel() {
       <div className={styles.cardWrap}>
         <div className={styles.auroraBorder} />
         <div className={styles.card}>
-          <IdleView onLaunch={handleLaunch} />
+          {jobState === 'idle' && <IdleView onLaunch={handleLaunch} />}
+          {jobState === 'downloading' && (
+            <DownloadingView
+              step={DEBUG_STEPS[debugStepIndex]}
+              percent={Math.round(((debugStepIndex) / DEBUG_STEPS.length) * 100)}
+            />
+          )}
+          {jobState === 'done' && (
+            <p style={{ color: 'var(--accent-teal)', fontFamily: 'var(--font-mono)', fontSize: 13, textAlign: 'center' }}>
+              ✓ DONE (Task 9 will build this view)
+            </p>
+          )}
         </div>
       </div>
+
+      <button
+        onClick={handleDebugNextStep}
+        style={{
+          marginTop: 16,
+          background: 'rgba(120,90,220,0.15)',
+          border: '1px solid rgba(120,90,220,0.3)',
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10,
+          letterSpacing: '0.15em',
+          padding: '6px 16px',
+          borderRadius: 6,
+          cursor: 'none',
+        }}
+      >
+        [DEBUG] {jobState.toUpperCase()} → NEXT
+      </button>
 
       <div className={styles.stats}>
         <div className={styles.statItem}>
