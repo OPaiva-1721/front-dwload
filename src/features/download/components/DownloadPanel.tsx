@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDownloadStore } from '../store'
 import { useJobStream } from '../hooks/useJobStream'
+import { useCreateDownload } from '../hooks/useCreateDownload'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
 import { DoneView } from './DoneView'
@@ -12,6 +13,7 @@ export function DownloadPanel() {
   const [jobId, setJobId] = useState<string | null>(null)
   const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
 
+  const createDownload = useCreateDownload()
   const { status, step, percent, result } = useJobStream(jobId)
 
   // Periodic glitch animation on the title
@@ -34,9 +36,10 @@ export function DownloadPanel() {
   }, [])
 
   function handleLaunch() {
-    console.log('[DownloadPanel] launch', { url, format, quality })
-    // Task 12 substituirá isso pela mutation real; por ora usa jobId mock
-    setJobId('mock-123')
+    createDownload.mutate(
+      { url, format, quality },
+      { onSuccess: ({ jobId: id }) => setJobId(id) }
+    )
   }
 
   function handleRestart() {
