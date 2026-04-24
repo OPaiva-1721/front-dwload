@@ -5,6 +5,7 @@ import { useCreateDownload } from '../hooks/useCreateDownload'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
 import { DoneView } from './DoneView'
+import { useHistoryStore } from '@/features/history/store'
 import styles from './DownloadPanel.module.css'
 
 export function DownloadPanel() {
@@ -15,6 +16,23 @@ export function DownloadPanel() {
 
   const createDownload = useCreateDownload()
   const { status, step, percent, result } = useJobStream(jobId)
+  const addToHistory = useHistoryStore((s) => s.add)
+
+  useEffect(() => {
+    if (status === 'done' && result && jobId) {
+      addToHistory({
+        id: jobId,
+        url,
+        title: result.title,
+        format,
+        quality,
+        completedAt: new Date().toISOString(),
+        thumbnail: result.thumbnail,
+        downloadUrl: result.downloadUrl,
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
   // Periodic glitch animation on the title
   useEffect(() => {
