@@ -1,30 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDownloadStore } from '../store'
+import { useJobStream } from '../hooks/useJobStream'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
-import { DoneView, type DownloadResult } from './DoneView'
-import type { Step } from '@/components/StepsIndicator'
+import { DoneView } from './DoneView'
 import styles from './DownloadPanel.module.css'
-
-type JobState = 'idle' | 'downloading' | 'done'
-
-const DEBUG_STEPS: Step[] = ['resolving', 'fetching', 'transcoding', 'packaging']
 
 export function DownloadPanel() {
   const [glitch, setGlitch] = useState(false)
   const glitchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [jobState, setJobState] = useState<JobState>('idle')
-  const [debugStepIndex, setDebugStepIndex] = useState(0)
+  const [jobId, setJobId] = useState<string | null>(null)
   const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
 
-  const FAKE_RESULT: DownloadResult = {
-    downloadUrl: '#',
-    title: 'Rick Astley - Never Gonna Give You Up (Official Video)',
-    duration: '3:33',
-    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-    size: '47.2 MB',
-    expiresAt: 'in 24h',
-  }
+  const { status, step, percent, result } = useJobStream(jobId)
 
   // Periodic glitch animation on the title
   useEffect(() => {
@@ -47,33 +35,20 @@ export function DownloadPanel() {
 
   function handleLaunch() {
     console.log('[DownloadPanel] launch', { url, format, quality })
-    setJobState('downloading')
-    setDebugStepIndex(0)
+    // Task 12 substituirá isso pela mutation real; por ora usa jobId mock
+    setJobId('mock-123')
   }
 
   function handleRestart() {
-    setJobState('idle')
-    setDebugStepIndex(0)
+    setJobId(null)
     setUrl('')
     setFormat('video')
     setQuality('1080p')
   }
 
-  function handleDebugNextStep() {
-    if (jobState === 'idle') {
-      setJobState('downloading')
-      setDebugStepIndex(0)
-    } else if (jobState === 'downloading') {
-      if (debugStepIndex < DEBUG_STEPS.length - 1) {
-        setDebugStepIndex((i) => i + 1)
-      } else {
-        setJobState('done')
-      }
-    } else {
-      setJobState('idle')
-      setDebugStepIndex(0)
-    }
-  }
+  const isIdle = status === 'idle'
+  const isDownloading = status === 'resolving' || status === 'downloading'
+  const isDone = status === 'done'
 
   return (
     <section className={styles.page}>
@@ -97,36 +72,15 @@ export function DownloadPanel() {
       <div className={styles.cardWrap}>
         <div className={styles.auroraBorder} />
         <div className={styles.card}>
-          {jobState === 'idle' && <IdleView onLaunch={handleLaunch} />}
-          {jobState === 'downloading' && (
-            <DownloadingView
-              step={DEBUG_STEPS[debugStepIndex]}
-              percent={Math.round(((debugStepIndex) / DEBUG_STEPS.length) * 100)}
-            />
+          {isIdle && <IdleView onLaunch={handleLaunch} />}
+          {isDownloading && (
+            <DownloadingView step={step} percent={percent} />
           )}
-          {jobState === 'done' && (
-            <DoneView result={FAKE_RESULT} onRestart={handleRestart} />
+          {isDone && result && (
+            <DoneView result={result} onRestart={handleRestart} />
           )}
         </div>
       </div>
-
-      <button
-        onClick={handleDebugNextStep}
-        style={{
-          marginTop: 16,
-          background: 'rgba(120,90,220,0.15)',
-          border: '1px solid rgba(120,90,220,0.3)',
-          color: 'var(--text-muted)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 10,
-          letterSpacing: '0.15em',
-          padding: '6px 16px',
-          borderRadius: 6,
-          cursor: 'none',
-        }}
-      >
-        [DEBUG] {jobState.toUpperCase()} → NEXT
-      </button>
 
       <div className={styles.stats}>
         <div className={styles.statItem}>
