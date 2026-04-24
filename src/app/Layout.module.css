@@ -41,7 +41,8 @@
   list-style: none;
 }
 
-.navLinks a {
+.navLinks a,
+.tweaksBtn {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.18em;
@@ -49,8 +50,16 @@
   transition: color 0.2s;
 }
 
-.navLinks a:hover {
+.navLinks a:hover,
+.tweaksBtn:hover {
   color: var(--text-primary);
+}
+
+.tweaksBtn {
+  background: none;
+  border: none;
+  cursor: none;
+  padding: 0;
 }
 
 .main {
