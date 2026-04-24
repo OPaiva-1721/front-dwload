@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useDownloadStore } from '../store'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
+import { DoneView, type DownloadResult } from './DoneView'
 import type { Step } from '@/components/StepsIndicator'
 import styles from './DownloadPanel.module.css'
 
@@ -14,7 +15,16 @@ export function DownloadPanel() {
   const glitchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [jobState, setJobState] = useState<JobState>('idle')
   const [debugStepIndex, setDebugStepIndex] = useState(0)
-  const { url, format, quality } = useDownloadStore()
+  const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
+
+  const FAKE_RESULT: DownloadResult = {
+    downloadUrl: '#',
+    title: 'Rick Astley - Never Gonna Give You Up (Official Video)',
+    duration: '3:33',
+    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+    size: '47.2 MB',
+    expiresAt: 'in 24h',
+  }
 
   // Periodic glitch animation on the title
   useEffect(() => {
@@ -39,6 +49,14 @@ export function DownloadPanel() {
     console.log('[DownloadPanel] launch', { url, format, quality })
     setJobState('downloading')
     setDebugStepIndex(0)
+  }
+
+  function handleRestart() {
+    setJobState('idle')
+    setDebugStepIndex(0)
+    setUrl('')
+    setFormat('video')
+    setQuality('1080p')
   }
 
   function handleDebugNextStep() {
@@ -87,9 +105,7 @@ export function DownloadPanel() {
             />
           )}
           {jobState === 'done' && (
-            <p style={{ color: 'var(--accent-teal)', fontFamily: 'var(--font-mono)', fontSize: 13, textAlign: 'center' }}>
-              ✓ DONE (Task 9 will build this view)
-            </p>
+            <DoneView result={FAKE_RESULT} onRestart={handleRestart} />
           )}
         </div>
       </div>
