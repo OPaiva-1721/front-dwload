@@ -33,14 +33,14 @@ export function UrlInput({ value, onChange, error }: Props) {
       )}
       <input
         type="url"
-        className={`${styles.input} ${icon ? styles.hasIcon : ''}`}
+        className={`${styles.input} ${icon ? styles.hasIcon : ''} ${error ? styles.inputError : ''}`}
         placeholder="https://youtube.com/watch?v= ..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label="URL do vídeo ou áudio"
         aria-invalid={!!error}
-        style={error ? { borderColor: 'rgba(248,113,113,0.6)' } : undefined}
       />
+      {error && <p className={styles.errorMsg}>{error}</p>}
     </div>
   )
 }

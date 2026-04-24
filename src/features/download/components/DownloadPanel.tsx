@@ -5,6 +5,7 @@ import { useCreateDownload } from '../hooks/useCreateDownload'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
 import { DoneView } from './DoneView'
+import { ErrorView } from './ErrorView'
 import { useHistoryStore } from '@/features/history/store'
 import styles from './DownloadPanel.module.css'
 
@@ -15,7 +16,7 @@ export function DownloadPanel() {
   const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
 
   const createDownload = useCreateDownload()
-  const { status, step, percent, result } = useJobStream(jobId)
+  const { status, step, percent, result, error } = useJobStream(jobId)
   const addToHistory = useHistoryStore((s) => s.add)
 
   useEffect(() => {
@@ -34,7 +35,6 @@ export function DownloadPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  // Periodic glitch animation on the title
   useEffect(() => {
     function scheduleGlitch() {
       glitchTimer.current = setTimeout(() => {
@@ -70,6 +70,7 @@ export function DownloadPanel() {
   const isIdle = status === 'idle'
   const isDownloading = status === 'resolving' || status === 'downloading'
   const isDone = status === 'done'
+  const isFailed = status === 'failed'
 
   return (
     <section className={styles.page}>
@@ -93,12 +94,20 @@ export function DownloadPanel() {
       <div className={styles.cardWrap}>
         <div className={styles.auroraBorder} />
         <div className={styles.card}>
-          {isIdle && <IdleView onLaunch={handleLaunch} />}
+          {isIdle && (
+            <IdleView onLaunch={handleLaunch} isPending={createDownload.isPending} />
+          )}
           {isDownloading && (
             <DownloadingView step={step} percent={percent} />
           )}
           {isDone && result && (
             <DoneView result={result} onRestart={handleRestart} />
+          )}
+          {isFailed && (
+            <ErrorView
+              message={error ?? 'Something went wrong. Please try again.'}
+              onRetry={handleRestart}
+            />
           )}
         </div>
       </div>

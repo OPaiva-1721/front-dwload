@@ -51,6 +51,20 @@
   color: var(--text-primary);
 }
 
+.inputError {
+  border-color: rgba(248, 113, 113, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.08) !important;
+}
+
+.errorMsg {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #f87171;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
 /* Scan line: thin horizontal shimmer that sweeps the input */
 .wrap::after {
   content: '';
