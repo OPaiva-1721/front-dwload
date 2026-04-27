@@ -9,6 +9,7 @@ const ALLOWED_DOMAINS = [
   'twitch.tv',
   'soundcloud.com',
   'spotify.com',
+  'dailymotion.com',
 ]
 
 function isAllowedDomain(url: string): boolean {
@@ -37,5 +38,22 @@ export const DownloadJobCreatedSchema = z.object({
   jobId: z.string(),
 })
 
+export const FormatInfoSchema = z.object({
+  id: z.string(),
+  extension: z.string(),
+  quality: z.string(),
+  fileSizeBytes: z.number().nullable(),
+  height: z.number().nullable(),
+})
+
+export const VideoMetadataSchema = z.object({
+  title: z.string(),
+  thumbnailUrl: z.string(),
+  duration: z.string(),
+  availableFormats: z.array(FormatInfoSchema),
+})
+
 export type DownloadRequest = z.infer<typeof DownloadRequestSchema>
 export type DownloadJobCreated = z.infer<typeof DownloadJobCreatedSchema>
+export type FormatInfo = z.infer<typeof FormatInfoSchema>
+export type VideoMetadata = z.infer<typeof VideoMetadataSchema>

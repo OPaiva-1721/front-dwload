@@ -61,16 +61,17 @@ export function DownloadPanel() {
   }
 
   function handleRestart() {
+    createDownload.reset()
     setJobId(null)
     setUrl('')
     setFormat('video')
     setQuality('1080p')
   }
 
-  const isIdle = status === 'idle'
+  const isIdle = status === 'idle' && !createDownload.isError
   const isDownloading = status === 'resolving' || status === 'downloading'
   const isDone = status === 'done'
-  const isFailed = status === 'failed'
+  const isFailed = status === 'failed' || createDownload.isError
 
   return (
     <section className={styles.page}>
@@ -105,7 +106,12 @@ export function DownloadPanel() {
           )}
           {isFailed && (
             <ErrorView
-              message={error ?? 'Something went wrong. Please try again.'}
+              message={
+                error ??
+                (createDownload.error instanceof Error
+                  ? createDownload.error.message
+                  : 'Something went wrong. Please try again.')
+              }
               onRetry={handleRestart}
             />
           )}

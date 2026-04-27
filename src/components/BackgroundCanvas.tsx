@@ -13,7 +13,6 @@ interface Star {
   vx: number; vy: number
   r: number; o: number
   sp: number; ph: number
-  trail: Array<{ x: number; y: number }>
   flare: boolean
 }
 
@@ -46,11 +45,12 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
 
   // ── Star canvas
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const _canvas = canvasRef.current
+    if (!_canvas) return
+    const canvas = _canvas
     const ctx = canvas.getContext('2d')!
 
-    const GR = 290, GF = 0.016, DAMP = 0.90, TRAIL = 7
+    const GR = 290, GF = 0.016, DAMP = 0.90
 
     let stars: Star[] = []
     let shoots: ShootingStar[] = []
@@ -73,7 +73,6 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
         o: Math.random() * 0.55 + 0.2,
         sp: Math.random() * 0.002 + 0.0008,
         ph: Math.random() * Math.PI * 2,
-        trail: [],
         flare: Math.random() < 0.045,
       }
     }
@@ -94,16 +93,12 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
     }
 
     function draw(t: number) {
-      ctx.fillStyle = 'rgba(5,5,8,0.2)'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       const spd = speedRef.current
       const boost = Math.min(mouseSpeed * 0.004, 0.45)
 
       for (const s of stars) {
-        s.trail.push({ x: s.x, y: s.y })
-        if (s.trail.length > TRAIL) s.trail.shift()
-
         const dx = mouse.x - s.x
         const dy = mouse.y - s.y
         const d = Math.sqrt(dx * dx + dy * dy)
@@ -147,15 +142,6 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
         const prox = d < GR ? (1 - d / GR) * 0.5 : 0
         const fa = Math.min(1, alpha + prox * 0.42 + boost)
         const fr = s.r + prox * 0.8
-
-        // Trail
-        for (let i = 0; i < s.trail.length; i++) {
-          const pt = s.trail[i]
-          ctx.beginPath()
-          ctx.arc(pt.x, pt.y, s.r * 0.55, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(180,180,255,${(i / TRAIL) * fa * 0.3})`
-          ctx.fill()
-        }
 
         // Star body
         ctx.beginPath()

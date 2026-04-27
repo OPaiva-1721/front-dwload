@@ -67,7 +67,7 @@ export function createMockEventSource(jobId: string): EventSource {
       closed = true
       timers.forEach(clearTimeout)
     },
-  } satisfies EventSource
+  }
 
-  return source
+  return source as unknown as EventSource
 }

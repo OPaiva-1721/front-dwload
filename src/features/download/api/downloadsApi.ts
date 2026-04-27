@@ -6,9 +6,11 @@ import { DownloadJobCreatedSchema, type DownloadJobCreated, type DownloadRequest
 export async function createDownload(req: DownloadRequest): Promise<DownloadJobCreated> {
   if (env.useMockSse) return mockCreateDownload(req)
 
-  const raw = await apiFetch<unknown>('/downloads', {
+  const backendFormat = req.format === 'video' ? 'mp4' : 'mp3'
+
+  const raw = await apiFetch<unknown>('/api/downloads', {
     method: 'POST',
-    body: JSON.stringify(req),
+    body: JSON.stringify({ url: req.url, format: backendFormat, quality: req.quality }),
   })
 
   return DownloadJobCreatedSchema.parse(raw)
