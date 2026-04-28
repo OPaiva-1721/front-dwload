@@ -5,7 +5,10 @@
       "PowerShell(pnpm *)",
       "PowerShell(npm install *)",
       "PowerShell(New-Item *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
