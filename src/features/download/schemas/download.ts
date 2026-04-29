@@ -32,6 +32,9 @@ export const DownloadRequestSchema = z.object({
   url: z.string().url().refine(isAllowedDomain, { message: 'Platform not supported.' }),
   format: z.enum(['video', 'audio']),
   quality: z.string().min(1),
+  title: z.string().optional(),
+  thumbnailUrl: z.string().optional(),
+  duration: z.string().optional(),
 })
 
 export const DownloadJobCreatedSchema = z.object({

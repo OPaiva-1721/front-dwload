@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useDownloadStore } from '../store'
 import { useJobStream } from '../hooks/useJobStream'
 import { useCreateDownload } from '../hooks/useCreateDownload'
+import { useMetadata } from '../hooks/useMetadata'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
 import { DoneView } from './DoneView'
@@ -18,6 +19,7 @@ export function DownloadPanel() {
   const createDownload = useCreateDownload()
   const { status, step, percent, result, error } = useJobStream(jobId)
   const addToHistory = useHistoryStore((s) => s.add)
+  const { data: metadata, isLoading: metaLoading } = useMetadata(url)
 
   useEffect(() => {
     if (status === 'done' && result && jobId) {
@@ -55,7 +57,7 @@ export function DownloadPanel() {
 
   function handleLaunch() {
     createDownload.mutate(
-      { url, format, quality },
+      { url, format, quality, title: metadata?.title, thumbnailUrl: metadata?.thumbnailUrl, duration: metadata?.duration },
       { onSuccess: ({ jobId: id }) => setJobId(id) }
     )
   }
@@ -96,7 +98,7 @@ export function DownloadPanel() {
         <div className={styles.auroraBorder} />
         <div className={styles.card}>
           {isIdle && (
-            <IdleView onLaunch={handleLaunch} isPending={createDownload.isPending} />
+            <IdleView onLaunch={handleLaunch} isPending={createDownload.isPending} metadata={metadata} metaLoading={metaLoading} />
           )}
           {isDownloading && (
             <DownloadingView step={step} percent={percent} />

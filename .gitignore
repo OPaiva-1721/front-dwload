@@ -8,8 +8,7 @@ dist/
 dist-ssr/
 build/
 
-# Environment variables (production only)
-.env.production
+# Environment variables
 .env.local
 .env.*.local
 

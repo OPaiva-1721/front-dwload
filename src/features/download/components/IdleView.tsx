@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useDownloadStore } from '../store'
-import { validateDownloadUrl, type FormatInfo } from '../schemas/download'
-import { useMetadata } from '../hooks/useMetadata'
+import { validateDownloadUrl, type FormatInfo, type VideoMetadata } from '../schemas/download'
 import { UrlInput } from './UrlInput'
 import { FormatPicker } from './FormatPicker'
 import { QualityPicker } from './QualityPicker'
@@ -24,11 +23,12 @@ function deriveVideoQualities(formats: FormatInfo[]): string[] {
 interface Props {
   onLaunch: () => void
   isPending?: boolean
+  metadata?: VideoMetadata
+  metaLoading?: boolean
 }
 
-export function IdleView({ onLaunch, isPending }: Props) {
+export function IdleView({ onLaunch, isPending, metadata, metaLoading = false }: Props) {
   const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
-  const { data: metadata, isLoading: metaLoading } = useMetadata(url)
 
   const videoQualityOptions = useMemo(
     () => (metadata ? deriveVideoQualities(metadata.availableFormats) : undefined),

@@ -10,7 +10,7 @@ export async function createDownload(req: DownloadRequest): Promise<DownloadJobC
 
   const raw = await apiFetch<unknown>('/api/downloads', {
     method: 'POST',
-    body: JSON.stringify({ url: req.url, format: backendFormat, quality: req.quality }),
+    body: JSON.stringify({ url: req.url, format: backendFormat, quality: req.quality, title: req.title, thumbnailUrl: req.thumbnailUrl, duration: req.duration }),
   })
 
   return DownloadJobCreatedSchema.parse(raw)
