@@ -1,4 +1,4 @@
-export type SseEventType = 'resolved' | 'progress' | 'done' | 'failed'
+export type SseEventType = 'progress' | 'done' | 'failed' | 'cancelled'
 
 interface MockEvent {
   type: SseEventType
@@ -6,22 +6,25 @@ interface MockEvent {
   delay: number
 }
 
-function buildSequence(jobId: string): MockEvent[] {
+function buildSequence(_jobId: string): MockEvent[] {
   return [
-    {
-      type: 'resolved',
-      delay: 600,
-      data: { jobId, title: 'Rick Astley - Never Gonna Give You Up', duration: '3:33', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg' },
-    },
-    { type: 'progress', delay: 800,  data: { step: 'fetching',    percent: 15 } },
-    { type: 'progress', delay: 900,  data: { step: 'fetching',    percent: 40 } },
-    { type: 'progress', delay: 800,  data: { step: 'transcoding', percent: 55 } },
-    { type: 'progress', delay: 900,  data: { step: 'transcoding', percent: 75 } },
-    { type: 'progress', delay: 700,  data: { step: 'packaging',   percent: 90 } },
+    { type: 'progress', delay: 900, data: { step: 'downloading', percent: 15 } },
+    { type: 'progress', delay: 700, data: { step: 'downloading', percent: 40 } },
+    { type: 'progress', delay: 700, data: { step: 'downloading', percent: 75 } },
+    { type: 'progress', delay: 600, data: { step: 'downloading', percent: 99 } },
+    { type: 'progress', delay: 300, data: { step: 'converting', percent: 99 } },
     {
       type: 'done',
-      delay: 600,
-      data: { downloadUrl: '#', title: 'Rick Astley - Never Gonna Give You Up', duration: '3:33', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg', size: '47.2 MB', expiresAt: 'in 24h' },
+      delay: 1200,
+      data: {
+        downloadUrl: '#',
+        title: 'Rick Astley - Never Gonna Give You Up',
+        duration: '3:33',
+        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+        size: '47.2 MB',
+        expiresAt: 'in 1 hour',
+        expiresAtUtc: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      },
     },
   ]
 }

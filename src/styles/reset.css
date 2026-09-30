@@ -10,18 +10,19 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-body);
   overflow-x: hidden;
-  cursor: none;
 }
 
+/* Column layout: <main> takes the free height and the footer follows it, so no page ever scrolls just for the footer */
 #root {
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 button {
   font: inherit;
   border: none;
   background: none;
-  cursor: none;
 }
 
 a {
@@ -36,5 +37,19 @@ img, video {
 
 input, textarea, select {
   font: inherit;
-  cursor: none;
+}
+
+/* The custom crosshair (Cursor.tsx) replaces the system cursor only where there is a mouse */
+@media (hover: hover) and (pointer: fine) {
+  html, body, button, a, label, input, textarea, select {
+    cursor: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

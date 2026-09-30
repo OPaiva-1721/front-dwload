@@ -34,27 +34,55 @@
 }
 
 .message {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   color: var(--text-muted);
   text-align: center;
-  letter-spacing: 0.04em;
-  line-height: 1.6;
-  max-width: 280px;
+  line-height: 1.5;
+  max-width: 360px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.actions > * {
+  min-height: 46px;
+}
+
+.secondaryBtn {
+  padding: 0 22px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.secondaryBtn:hover {
+  color: var(--text-primary);
+  border-color: rgba(167, 139, 250, 0.5);
 }
 
 .retryBtn {
-  margin-top: 4px;
-  padding: 12px 28px;
+  padding: 0 28px;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--launch-from), var(--launch-to));
   border: none;
   color: #fff;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.2em;
-  cursor: none;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   transition: transform 0.15s, box-shadow 0.15s;
   box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4);
 }

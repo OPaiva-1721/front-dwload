@@ -19,8 +19,9 @@
 
   /* Text */
   --text-primary: #f1f0ff;
-  --text-muted: #8b8aaa;
-  --text-dim: #4a4870;
+  --text-muted: #a5a3c7;
+  /* Both pass WCAG AA (4.5:1) on the page and card backgrounds */
+  --text-dim: #8280ab;
 
   /* Fonts */
   --font-mono: 'Space Mono', monospace;

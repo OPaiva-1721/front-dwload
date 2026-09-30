@@ -15,3 +15,8 @@ export async function createDownload(req: DownloadRequest): Promise<DownloadJobC
 
   return DownloadJobCreatedSchema.parse(raw)
 }
+
+export async function cancelDownload(jobId: string): Promise<void> {
+  if (env.useMockSse) return
+  await apiFetch<void>(`/api/downloads/${jobId}`, { method: 'DELETE' })
+}

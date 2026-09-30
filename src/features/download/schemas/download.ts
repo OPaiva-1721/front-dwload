@@ -8,9 +8,10 @@ const ALLOWED_DOMAINS = [
   'vimeo.com',
   'twitch.tv',
   'soundcloud.com',
-  'spotify.com',
   'dailymotion.com',
 ]
+
+export const SUPPORTED_PLATFORMS = ['YouTube', 'TikTok', 'Instagram', 'X', 'Vimeo', 'SoundCloud', 'Twitch', 'Dailymotion']
 
 function isAllowedDomain(url: string): boolean {
   try {
@@ -23,8 +24,8 @@ function isAllowedDomain(url: string): boolean {
 
 export function validateDownloadUrl(url: string): string | null {
   if (!url) return null
-  try { new URL(url) } catch { return 'Enter a valid URL.' }
-  if (!isAllowedDomain(url)) return 'Platform not supported. Supported: YouTube, Instagram, TikTok, Twitter/X, Vimeo, Twitch, SoundCloud, Spotify.'
+  try { new URL(url) } catch { return "That doesn't look like a valid link." }
+  if (!isAllowedDomain(url)) return `This site isn't supported yet. Try ${SUPPORTED_PLATFORMS.join(', ')}.`
   return null
 }
 
@@ -47,6 +48,9 @@ export const FormatInfoSchema = z.object({
   quality: z.string(),
   fileSizeBytes: z.number().nullable(),
   height: z.number().nullable(),
+  hasVideo: z.boolean().default(false),
+  hasAudio: z.boolean().default(false),
+  audioBitrateKbps: z.number().nullable().default(null),
 })
 
 export const VideoMetadataSchema = z.object({

@@ -1,25 +1,54 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDownloadStore } from '../store'
 import { useJobStream } from '../hooks/useJobStream'
 import { useCreateDownload } from '../hooks/useCreateDownload'
 import { useMetadata } from '../hooks/useMetadata'
+import { cancelDownload } from '../api/downloadsApi'
+import { extractUrl } from '../lib/extractUrl'
+import { SUPPORTED_PLATFORMS } from '../schemas/download'
 import { IdleView } from './IdleView'
 import { DownloadingView } from './DownloadingView'
 import { DoneView } from './DoneView'
 import { ErrorView } from './ErrorView'
+import { HeroTitle } from './HeroTitle'
 import { useHistoryStore } from '@/features/history/store'
 import styles from './DownloadPanel.module.css'
 
+const GENERIC_ERROR = 'Something went wrong. Please try again.'
+
+/**
+ * Links arrive from the OS share sheet (share_target in manifest.webmanifest) as ?link= or,
+ * from apps that only share text, inside ?text=. ?url= also works in production (the Vite dev
+ * server reserves it). Read once, then drop them from the address bar.
+ */
+function useSharedLink(onLink: (url: string) => void) {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const url = ['link', 'url', 'text', 'title']
+      .map((name) => extractUrl(params.get(name)))
+      .find(Boolean)
+    if (!url) return
+    onLink(url)
+    window.history.replaceState(null, '', window.location.pathname)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+}
+
 export function DownloadPanel() {
-  const [glitch, setGlitch] = useState(false)
-  const glitchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [jobId, setJobId] = useState<string | null>(null)
-  const { url, format, quality, setUrl, setFormat, setQuality } = useDownloadStore()
+  const [cancelling, setCancelling] = useState(false)
+  const { url, format, quality, setUrl, setFormat } = useDownloadStore()
 
   const createDownload = useCreateDownload()
-  const { status, step, percent, result, error } = useJobStream(jobId)
+  const { status, percent, result, error } = useJobStream(jobId)
   const addToHistory = useHistoryStore((s) => s.add)
-  const { data: metadata, isLoading: metaLoading } = useMetadata(url)
+  const metadataQuery = useMetadata(url)
+  const metadata = metadataQuery.data
+  const metaError = metadataQuery.error
+    ? (metadataQuery.error instanceof Error ? metadataQuery.error.message : GENERIC_ERROR)
+    : undefined
+
+  useSharedLink(setUrl)
 
   useEffect(() => {
     if (status === 'done' && result && jobId) {
@@ -30,30 +59,18 @@ export function DownloadPanel() {
         format,
         quality,
         completedAt: new Date().toISOString(),
+        expiresAtUtc: result.expiresAtUtc,
         thumbnail: result.thumbnail,
         downloadUrl: result.downloadUrl,
       })
     }
+    // A cancelled job goes straight back to the form, link and choices intact
+    if (status === 'cancelled') {
+      setCancelling(false)
+      setJobId(null)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
-
-  useEffect(() => {
-    function scheduleGlitch() {
-      glitchTimer.current = setTimeout(() => {
-        setGlitch(true)
-        setTimeout(() => {
-          setGlitch(false)
-          scheduleGlitch()
-        }, 140)
-      }, 4500 + Math.random() * 6000)
-    }
-
-    const initial = setTimeout(scheduleGlitch, 3500)
-    return () => {
-      clearTimeout(initial)
-      if (glitchTimer.current) clearTimeout(glitchTimer.current)
-    }
-  }, [])
 
   function handleLaunch() {
     createDownload.mutate(
@@ -62,18 +79,38 @@ export function DownloadPanel() {
     )
   }
 
-  function handleRestart() {
-    createDownload.reset()
+  async function handleCancel() {
+    if (!jobId) return
+    setCancelling(true)
+    try {
+      await cancelDownload(jobId)
+      // Mock mode has no server to confirm; the real API confirms via the stream's "cancelled" event
+      if (!jobId.startsWith('mock')) return
+    } catch {
+      // Already finished (409) or gone: the stream will report the real outcome
+      setCancelling(false)
+      return
+    }
+    setCancelling(false)
     setJobId(null)
-    setUrl('')
-    setFormat('video')
-    setQuality('1080p')
   }
 
-  const isIdle = status === 'idle' && !createDownload.isError
-  const isDownloading = status === 'resolving' || status === 'downloading'
+  /** Back to the form, keeping the link so the user can retry or pick another quality. */
+  function handleRetry() {
+    createDownload.reset()
+    setJobId(null)
+  }
+
+  function handleStartOver() {
+    handleRetry()
+    setUrl('')
+    setFormat('video')
+  }
+
+  const isDownloading = status === 'preparing' || status === 'downloading' || status === 'converting'
   const isDone = status === 'done'
   const isFailed = status === 'failed' || createDownload.isError
+  const isIdle = !isDownloading && !isDone && !isFailed
 
   return (
     <section className={styles.page}>
@@ -83,57 +120,56 @@ export function DownloadPanel() {
         <span className={`${styles.eyebrowLine} ${styles.eyebrowLineRight}`} />
       </div>
 
-      <h1 className={styles.title}>
-        <span className={styles.titleLine1}>Capture</span>
-        <span className={`${styles.titleLine2} ${glitch ? styles.glitch : ''}`}>
-          Any Signal
-        </span>
-      </h1>
+      <HeroTitle />
 
       <p className={styles.subtitle}>
-        Paste any URL. Choose your format. Launch into the void.
+        Paste a link, pick video or audio, and save it in seconds.
       </p>
 
       <div className={styles.cardWrap}>
         <div className={styles.auroraBorder} />
         <div className={styles.card}>
           {isIdle && (
-            <IdleView onLaunch={handleLaunch} isPending={createDownload.isPending} metadata={metadata} metaLoading={metaLoading} />
+            <IdleView
+              onLaunch={handleLaunch}
+              isPending={createDownload.isPending}
+              metadata={metadata}
+              metaLoading={metadataQuery.isLoading}
+              metaError={metaError}
+            />
           )}
           {isDownloading && (
-            <DownloadingView step={step} percent={percent} />
+            <DownloadingView
+              status={status}
+              percent={percent}
+              format={format}
+              metadata={metadata}
+              onCancel={handleCancel}
+              cancelling={cancelling}
+            />
           )}
           {isDone && result && (
-            <DoneView result={result} onRestart={handleRestart} />
+            <DoneView result={result} onRestart={handleStartOver} />
           )}
           {isFailed && (
             <ErrorView
               message={
                 error ??
-                (createDownload.error instanceof Error
-                  ? createDownload.error.message
-                  : 'Something went wrong. Please try again.')
+                (createDownload.error instanceof Error ? createDownload.error.message : GENERIC_ERROR)
               }
-              onRetry={handleRestart}
+              onRetry={handleRetry}
+              onStartOver={handleStartOver}
             />
           )}
         </div>
       </div>
 
-      <div className={styles.stats}>
-        <div className={styles.statItem}>
-          <span className={styles.statValue}>4K+</span>
-          <span className={styles.statLabel}>RESOLUTIONS</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statValue}>15+</span>
-          <span className={styles.statLabel}>PLATFORMS</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statValue}>{'< 30s'}</span>
-          <span className={styles.statLabel}>AVG. TIME</span>
-        </div>
-      </div>
+      <p className={styles.platforms}>
+        <span className={styles.platformsLabel}>Works with</span>
+        {SUPPORTED_PLATFORMS.map((name) => (
+          <span key={name} className={styles.platform}>{name}</span>
+        ))}
+      </p>
     </section>
   )
 }

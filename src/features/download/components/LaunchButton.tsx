@@ -1,20 +1,15 @@
 import styles from './LaunchButton.module.css'
 
 interface Props {
-  onClick: () => void
+  label: string
   disabled?: boolean
   loading?: boolean
 }
 
-export function LaunchButton({ onClick, disabled, loading }: Props) {
+export function LaunchButton({ label, disabled, loading }: Props) {
   return (
-    <button
-      type="button"
-      className={styles.btn}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
-      🚀 {loading ? 'LAUNCHING...' : 'LAUNCH DOWNLOAD'}
+    <button type="submit" className={styles.btn} disabled={disabled || loading} aria-busy={loading}>
+      {loading ? 'Starting…' : label}
     </button>
   )
 }

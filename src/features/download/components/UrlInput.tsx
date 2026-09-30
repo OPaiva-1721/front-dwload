@@ -1,4 +1,5 @@
-import type { ReactElement } from 'react'
+import { useEffect, useState, type ClipboardEvent, type ReactElement } from 'react'
+import { extractUrl } from '../lib/extractUrl'
 import styles from './UrlInput.module.css'
 
 function Icon({ d, viewBox = '0 0 24 24' }: { d: string; viewBox?: string }) {
@@ -13,10 +14,6 @@ const PLATFORMS: { re: RegExp; icon: ReactElement }[] = [
   {
     re: /youtube\.com|youtu\.be/,
     icon: <Icon d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />,
-  },
-  {
-    re: /spotify\.com/,
-    icon: <Icon d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />,
   },
   {
     re: /twitter\.com|x\.com/,
@@ -57,29 +54,74 @@ interface Props {
   onChange: (value: string) => void
   error?: string
   loading?: boolean
+  inputId?: string
+  describedBy?: string
 }
 
-export function UrlInput({ value, onChange, error, loading }: Props) {
+const canReadClipboard = () => typeof navigator !== 'undefined' && !!navigator.clipboard?.readText
+
+export function UrlInput({ value, onChange, error, loading, inputId = 'url-input', describedBy }: Props) {
   const icon = detectPlatformIcon(value)
+  const [clipboardSupported, setClipboardSupported] = useState(false)
+  useEffect(() => setClipboardSupported(canReadClipboard()), [])
+
+  // Share sheets and captions wrap links in prose; keep just the link
+  function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
+    const text = e.clipboardData.getData('text')
+    const url = extractUrl(text)
+    if (url && url !== text.trim()) {
+      e.preventDefault()
+      onChange(url)
+    }
+  }
+
+  async function pasteFromClipboard() {
+    try {
+      const url = extractUrl(await navigator.clipboard.readText())
+      if (url) onChange(url)
+    } catch {
+      // Permission denied or empty clipboard: the user can still paste manually
+    }
+  }
+
+  const errorId = `${inputId}-error`
 
   return (
     <div className={styles.wrap}>
-      {icon && (
-        <span className={`${styles.platformIcon} ${styles.visible}`}>
-          {icon}
-        </span>
-      )}
-      <input
-        type="url"
-        className={`${styles.input} ${icon ? styles.hasIcon : ''} ${error ? styles.inputError : ''} ${loading ? styles.inputLoading : ''}`}
-        placeholder="https://youtube.com/watch?v= ..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label="URL do vídeo ou áudio"
-        aria-invalid={!!error}
-      />
-      {loading && <span className={styles.spinner} aria-hidden />}
-      {error && <p className={styles.errorMsg}>{error}</p>}
+      <label htmlFor={inputId} className={styles.srOnly}>Video or audio link</label>
+      <div className={styles.field}>
+        {icon && <span className={styles.platformIcon}>{icon}</span>}
+        <input
+          id={inputId}
+          type="url"
+          inputMode="url"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="go"
+          className={`${styles.input} ${icon ? styles.hasIcon : ''} ${error ? styles.inputError : ''}`}
+          placeholder="Paste a link: YouTube, TikTok, Instagram…"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onPaste={handlePaste}
+          aria-invalid={!!error}
+          aria-describedby={[error ? errorId : null, describedBy].filter(Boolean).join(' ') || undefined}
+        />
+        <div className={styles.trailing}>
+          {loading && <span className={styles.spinner} aria-hidden />}
+          {!value && clipboardSupported && (
+            <button type="button" className={styles.actionBtn} onClick={pasteFromClipboard}>
+              Paste
+            </button>
+          )}
+          {value && !loading && (
+            <button type="button" className={styles.clearBtn} onClick={() => onChange('')} aria-label="Clear link">
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+      {error && <p id={errorId} className={styles.errorMsg} role="alert">{error}</p>}
     </div>
   )
 }

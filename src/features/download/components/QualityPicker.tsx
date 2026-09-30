@@ -1,46 +1,33 @@
-import type { Format } from '../store'
+import { formatBytes, qualityLabel, type QualityOption } from '../lib/qualities'
 import styles from './QualityPicker.module.css'
 
-const DEFAULT_QUALITIES: Record<Format, readonly string[]> = {
-  video: ['2160p', '1080p', '720p', '480p'],
-  audio: ['320kbps', '256kbps', '192kbps', '128kbps'],
-}
-
 interface Props {
-  format: Format
+  options: QualityOption[]
   value: string
   onChange: (quality: string) => void
-  options?: string[]
-  loading?: boolean
+  disabled?: boolean
 }
 
-export function QualityPicker({ format, value, onChange, options, loading }: Props) {
-  const qualities = options ?? DEFAULT_QUALITIES[format]
-
-  if (loading) {
-    return (
-      <div className={styles.row}>
-        {DEFAULT_QUALITIES[format].map((q) => (
-          <button key={q} type="button" className={styles.pill} disabled>
-            {q}
-          </button>
-        ))}
-      </div>
-    )
-  }
-
+export function QualityPicker({ options, value, onChange, disabled = false }: Props) {
   return (
-    <div className={styles.row}>
-      {qualities.map((q) => (
-        <button
-          key={q}
-          type="button"
-          className={`${styles.pill} ${value === q ? styles.active : ''}`}
-          onClick={() => onChange(q)}
-        >
-          {q}
-        </button>
+    <fieldset className={styles.row} disabled={disabled}>
+      <legend className={styles.legend}>Quality</legend>
+      {options.map((option) => (
+        <label key={option.value} className={`${styles.pill} ${value === option.value ? styles.active : ''}`}>
+          <input
+            type="radio"
+            name="quality"
+            value={option.value}
+            checked={value === option.value}
+            onChange={() => onChange(option.value)}
+            className={styles.radio}
+          />
+          <span className={styles.value}>{qualityLabel(option.value)}</span>
+          {option.sizeBytes !== undefined && (
+            <span className={styles.size}>~{formatBytes(option.sizeBytes)}</span>
+          )}
+        </label>
       ))}
-    </div>
+    </fieldset>
   )
 }

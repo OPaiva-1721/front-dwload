@@ -41,25 +41,44 @@ describe('useJobStream', () => {
     expect(result.current.status).toBe('idle')
   })
 
-  it('moves to resolving when jobId is set', () => {
+  it('moves to preparing when jobId is set', () => {
     const { result } = renderHook(() => useJobStream('job-1'))
-    expect(result.current.status).toBe('resolving')
+    expect(result.current.status).toBe('preparing')
   })
 
-  it('transitions idle → resolving → downloading on events', async () => {
+  it('transitions preparing → downloading → converting on progress events', async () => {
     const { result } = renderHook(() => useJobStream('job-1'))
 
     await act(async () => {
-      handle.emit('resolved', {})
+      handle.emit('progress', { step: 'downloading', percent: 40 })
     })
     expect(result.current.status).toBe('downloading')
-    expect(result.current.step).toBe('fetching')
+    expect(result.current.percent).toBe(40)
 
     await act(async () => {
-      handle.emit('progress', { step: 'transcoding', percent: 60 })
+      handle.emit('progress', { step: 'converting', percent: 99 })
     })
-    expect(result.current.step).toBe('transcoding')
+    expect(result.current.status).toBe('converting')
+  })
+
+  it('never lets progress go backwards', async () => {
+    const { result } = renderHook(() => useJobStream('job-1'))
+
+    await act(async () => {
+      handle.emit('progress', { step: 'downloading', percent: 60 })
+      handle.emit('progress', { step: 'downloading', percent: 20 })
+    })
     expect(result.current.percent).toBe(60)
+  })
+
+  it('transitions to cancelled and closes the stream', async () => {
+    const { result } = renderHook(() => useJobStream('job-1'))
+
+    await act(async () => {
+      handle.emit('cancelled', {})
+    })
+    expect(result.current.status).toBe('cancelled')
+    expect(handle.close).toHaveBeenCalled()
   })
 
   it('transitions to done with result', async () => {

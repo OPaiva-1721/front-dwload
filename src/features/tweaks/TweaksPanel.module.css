@@ -52,7 +52,6 @@
   border: none;
   color: var(--text-dim);
   font-size: 14px;
-  cursor: none;
   padding: 4px;
   transition: color 0.15s;
 }
@@ -101,7 +100,6 @@
   border-radius: 8px;
   border: 1px solid var(--card-border);
   background: none;
-  cursor: none;
   padding: 2px;
 }
 
@@ -114,7 +112,6 @@
 .slider {
   width: 100%;
   accent-color: var(--accent-purple);
-  cursor: none;
 }
 
 .resetBtn {
@@ -126,7 +123,6 @@
   border: 1px solid rgba(120, 90, 220, 0.15);
   border-radius: 8px;
   padding: 10px;
-  cursor: none;
   transition: color 0.15s, border-color 0.15s;
 }
 

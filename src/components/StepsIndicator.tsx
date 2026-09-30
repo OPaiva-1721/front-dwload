@@ -1,45 +1,33 @@
 import styles from './StepsIndicator.module.css'
 
-const STEPS = ['resolving', 'fetching', 'transcoding', 'packaging'] as const
-export type Step = (typeof STEPS)[number]
-
-const STEP_LABELS: Record<Step, string> = {
-  resolving: 'Resolving',
-  fetching: 'Fetching',
-  transcoding: 'Transcoding',
-  packaging: 'Packaging',
-}
-
 interface Props {
-  currentStep: Step
+  steps: readonly string[]
+  /** Index of the step in progress; steps before it render as done. */
+  current: number
 }
 
-export function StepsIndicator({ currentStep }: Props) {
-  const currentIndex = STEPS.indexOf(currentStep)
-
+export function StepsIndicator({ steps, current }: Props) {
   return (
-    <div className={styles.root}>
-      {STEPS.map((step, i) => {
-        const isDone = i < currentIndex
-        const isActive = i === currentIndex
+    <ol className={styles.root}>
+      {steps.map((label, i) => {
+        const isDone = i < current
+        const isActive = i === current
         const statusClass = isDone ? styles.done : isActive ? styles.active : styles.pending
 
         return (
-          <div key={step} className={styles.item}>
+          <li key={label} className={styles.item} aria-current={isActive ? 'step' : undefined}>
             <div className={styles.stepCol}>
-              <div className={`${styles.circle} ${statusClass}`}>
+              <div className={`${styles.circle} ${statusClass}`} aria-hidden>
                 {isDone ? '✓' : i + 1}
               </div>
-              <span className={`${styles.label} ${statusClass}`}>
-                {STEP_LABELS[step]}
-              </span>
+              <span className={`${styles.label} ${statusClass}`}>{label}</span>
             </div>
-            {i < STEPS.length - 1 && (
-              <div className={`${styles.connector} ${isDone ? styles.connectorDone : ''}`} />
+            {i < steps.length - 1 && (
+              <div className={`${styles.connector} ${isDone ? styles.connectorDone : ''}`} aria-hidden />
             )}
-          </div>
+          </li>
         )
       })}
-    </div>
+    </ol>
   )
 }

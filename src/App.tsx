@@ -13,7 +13,7 @@ function AppInner() {
     <>
       <BackgroundCanvas density={density} speed={speed} mode="idle" />
       <Cursor />
-      <TweaksPanel />
+      {import.meta.env.DEV && <TweaksPanel />}
       <RouterProvider router={router} />
     </>
   )

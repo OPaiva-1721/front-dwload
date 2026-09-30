@@ -1,33 +1,78 @@
 .row {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
+  margin: 0 0 20px;
+  padding: 0;
+  border: none;
   flex-wrap: wrap;
+  text-align: left;
+}
+
+.row:disabled {
+  opacity: 0.5;
+}
+
+.legend {
+  width: 100%;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .pill {
-  padding: 5px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(100, 80, 200, 0.25);
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 72px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(100, 80, 200, 0.35);
   background: transparent;
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  transition: all 0.2s;
-}
-
-.pill:hover:not(:disabled) {
   color: var(--text-muted);
-  border-color: rgba(167, 139, 250, 0.4);
+  font-family: var(--font-mono);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
-.pill:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+.pill:hover {
+  color: var(--text-primary);
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+/* Visually hidden but focusable, so arrow keys move between options */
+.radio {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+}
+
+.pill:focus-within {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 2px;
+}
+
+.value {
+  font-size: 13px;
+}
+
+.size {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .pill.active {
   background: rgba(45, 212, 191, 0.12);
   border-color: var(--accent-teal);
   color: var(--accent-teal);
+}
+
+.pill.active .size {
+  color: #99f6e4;
 }

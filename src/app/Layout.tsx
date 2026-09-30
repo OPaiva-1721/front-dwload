@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'
+import { NavLink, Link, Outlet } from 'react-router-dom'
 import { useTweaksStore } from '@/features/tweaks/store'
 import styles from './Layout.module.css'
 
@@ -7,14 +7,17 @@ export function Layout() {
 
   return (
     <>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Main">
         <Link to="/" className={styles.logo}>
-          <span className={styles.logoDot} />
+          <span className={styles.logoDot} aria-hidden />
           DWLOAD
         </Link>
         <ul className={styles.navLinks}>
-          <li><Link to="/history">HISTORY</Link></li>
-          <li><button className={styles.tweaksBtn} onClick={toggleTweaks}>TWEAKS</button></li>
+          <li><NavLink to="/history">History</NavLink></li>
+          {/* Design playground (accent, star density, speed): a dev tool, not a product feature */}
+          {import.meta.env.DEV && (
+            <li><button type="button" className={styles.tweaksBtn} onClick={toggleTweaks}>Tweaks</button></li>
+          )}
         </ul>
       </nav>
 
@@ -23,9 +26,9 @@ export function Layout() {
       </main>
 
       <footer className={styles.footerTag}>
-        <span className={styles.footerDot} />
-        END-TO-END ENCRYPTED TRANSMISSION
-        <span className={styles.footerDot} />
+        <span className={styles.footerDot} aria-hidden />
+        Files are deleted automatically after 1 hour
+        <span className={styles.footerDot} aria-hidden />
       </footer>
     </>
   )

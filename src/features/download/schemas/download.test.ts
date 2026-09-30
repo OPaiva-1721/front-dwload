@@ -7,13 +7,22 @@ describe('validateDownloadUrl', () => {
   })
 
   it('returns error for invalid URL', () => {
-    expect(validateDownloadUrl('not-a-url')).toBe('Enter a valid URL.')
-    expect(validateDownloadUrl('foo bar')).toBe('Enter a valid URL.')
+    expect(validateDownloadUrl('not-a-url')).toBe("That doesn't look like a valid link.")
+    expect(validateDownloadUrl('foo bar')).toBe("That doesn't look like a valid link.")
   })
 
   it('returns error for unsupported domain', () => {
     const err = validateDownloadUrl('https://example.com/video')
-    expect(err).toContain('Platform not supported')
+    expect(err).toContain("isn't supported")
+  })
+
+  it('rejects Spotify, which cannot be downloaded (DRM)', () => {
+    expect(validateDownloadUrl('https://open.spotify.com/track/abc')).not.toBeNull()
+  })
+
+  it('accepts mobile and app subdomains', () => {
+    expect(validateDownloadUrl('https://m.youtube.com/watch?v=abc')).toBeNull()
+    expect(validateDownloadUrl('https://vm.tiktok.com/ZMabc/')).toBeNull()
   })
 
   it('returns null for supported domains', () => {

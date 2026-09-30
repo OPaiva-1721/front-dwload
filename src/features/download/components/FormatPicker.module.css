@@ -10,14 +10,17 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 13px;
+  min-height: 46px;
+  padding: 12px;
   border-radius: 10px;
-  border: 1px solid transparent;
+  /* Visible outline even when inactive, so both options read as buttons */
+  border: 1px solid rgba(100, 80, 200, 0.3);
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.15em;
+  text-transform: uppercase;
   transition: all 0.2s;
 }
 
@@ -37,4 +40,12 @@
   width: 15px;
   height: 15px;
   flex-shrink: 0;
+}
+
+/* Keep "Video · MP4" on one line on phones */
+@media (max-width: 420px) {
+  .btn {
+    letter-spacing: 0.06em;
+    gap: 6px;
+  }
 }

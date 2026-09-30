@@ -27,3 +27,24 @@
   0%, 100% { opacity: 0.5; }
   50%       { opacity: 1; }
 }
+
+.indeterminate {
+  height: 100%;
+  width: 35%;
+  border-radius: 999px;
+  background: linear-gradient(to right, transparent, var(--accent-teal), var(--accent-purple), transparent);
+  animation: sweep 1.3s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indeterminate {
+    width: 100%;
+    animation: none;
+    opacity: 0.6;
+  }
+}

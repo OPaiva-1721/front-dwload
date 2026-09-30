@@ -11,6 +11,7 @@
 }
 
 .logo {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -37,17 +38,26 @@
 
 .navLinks {
   display: flex;
-  gap: 40px;
+  gap: 16px;
   list-style: none;
 }
 
 .navLinks a,
 .tweaksBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.18em;
-  color: var(--text-dim);
+  text-transform: uppercase;
+  color: var(--text-muted);
   transition: color 0.2s;
+}
+
+.navLinks a[aria-current="page"] {
+  color: var(--text-primary);
 }
 
 .navLinks a:hover,
@@ -58,29 +68,29 @@
 .tweaksBtn {
   background: none;
   border: none;
-  cursor: none;
-  padding: 0;
 }
 
 .main {
   position: relative;
   z-index: 10;
+  flex: 1;
 }
 
+/* In the page flow (not fixed), so it can never sit on top of a tall card on small screens */
 .footerTag {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  color: var(--text-dim);
+  position: relative;
   z-index: 10;
+  padding: 0 16px 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  white-space: nowrap;
+  text-align: center;
 }
 
 .footerDot {
