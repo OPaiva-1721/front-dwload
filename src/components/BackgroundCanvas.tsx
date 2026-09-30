@@ -29,6 +29,18 @@ interface Ripple {
   str: number
 }
 
+// Star count is tuned for a 1080p desktop; small screens get proportionally fewer (min 35%)
+const REFERENCE_AREA = 1920 * 1080
+
+function prefersReducedMotion() {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+}
+
+function starCountFor(density: number) {
+  const scale = Math.min(1, Math.max(0.35, (window.innerWidth * window.innerHeight) / REFERENCE_AREA))
+  return Math.round(density * scale)
+}
+
 export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const neb1Ref = useRef<HTMLDivElement>(null)
@@ -58,6 +70,8 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
     const mouse = { x: -9999, y: -9999 }
     let prevX = 0, prevY = 0, mouseSpeed = 0, isHeld = false
     let rafId = 0
+    // Reduced motion: paint one static frame, no animation loop or shooting stars
+    const staticOnly = prefersReducedMotion()
 
     function resize() {
       canvas.width = window.innerWidth
@@ -79,7 +93,7 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
 
     function init() {
       resize()
-      stars = Array.from({ length: densityRef.current }, mkStar)
+      stars = Array.from({ length: starCountFor(densityRef.current) }, mkStar)
     }
 
     function shootingStar() {
@@ -187,7 +201,7 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
         ctx.lineWidth = 1; ctx.stroke()
       }
 
-      rafId = requestAnimationFrame(draw)
+      if (!staticOnly) rafId = requestAnimationFrame(draw)
     }
 
     const onMove = (e: MouseEvent) => {
@@ -203,7 +217,10 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
     }
     const onDown = () => { isHeld = true }
     const onUp = () => { isHeld = false }
-    const onResize = () => { resize() }
+    const onResize = () => {
+      resize()
+      if (staticOnly) draw(0)
+    }
 
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseleave', onLeave)
@@ -212,12 +229,14 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
     window.addEventListener('mouseup', onUp)
     window.addEventListener('resize', onResize)
 
-    const shootInterval = setInterval(() => {
-      if (Math.random() < 0.7) shootingStar()
+    // rAF pauses in hidden tabs but intervals don't — skip so stars don't pile up for the return
+    const shootInterval = staticOnly ? undefined : setInterval(() => {
+      if (!document.hidden && Math.random() < 0.7) shootingStar()
     }, 5000)
 
     init()
-    rafId = requestAnimationFrame(draw)
+    if (staticOnly) draw(0)
+    else rafId = requestAnimationFrame(draw)
 
     return () => {
       cancelAnimationFrame(rafId)
@@ -241,9 +260,15 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
     let bx = 0, by = 0, tx = 0, ty = 0
     let rafId = 0
 
+    if (prefersReducedMotion()) return
+
+    // Loop only runs while the layers are still easing toward the mouse; idle = no frames
+    const start = () => { if (!rafId) rafId = requestAnimationFrame(loop) }
+
     const onMove = (e: MouseEvent) => {
       bx = (e.clientX / window.innerWidth - 0.5) * 55
       by = (e.clientY / window.innerHeight - 0.5) * 55
+      start()
     }
 
     function loop() {
@@ -253,11 +278,10 @@ export function BackgroundCanvas({ density = 230, speed = 1, mode = 'idle' }: Pr
         const el = l.ref.current
         if (el) el.style.transform = `translate(${tx * l.sx}px, ${ty * l.sy}px)`
       }
-      rafId = requestAnimationFrame(loop)
+      rafId = Math.abs(bx - tx) + Math.abs(by - ty) > 0.05 ? requestAnimationFrame(loop) : 0
     }
 
     window.addEventListener('mousemove', onMove)
-    rafId = requestAnimationFrame(loop)
 
     return () => {
       cancelAnimationFrame(rafId)
